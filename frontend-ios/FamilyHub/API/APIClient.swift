@@ -1,6 +1,13 @@
 import Foundation
 import Security
 
+struct PaginatedResponse<T: Decodable>: Decodable {
+    let count: Int
+    let next: String?
+    let previous: String?
+    let results: [T]
+}
+
 enum APIError: LocalizedError {
     case unauthorized
     case notFound
@@ -26,7 +33,7 @@ final class APIClient {
 
     private let keychainKey = "familyhub_auth_token"
     private let baseURLKey = "familyhub_base_url"
-    private let defaultBaseURL = "http://192.168.1.100:8000"
+    private let defaultBaseURL = "https://familyhub.ascutney.net"
 
     var baseURL: String {
         get { UserDefaults.standard.string(forKey: baseURLKey) ?? defaultBaseURL }
@@ -79,6 +86,11 @@ final class APIClient {
             let message = String(data: data, encoding: .utf8) ?? "Unknown error"
             throw APIError.serverError(message)
         }
+    }
+
+    func requestList<T: Decodable>(_ endpoint: String) async throws -> [T] {
+        let response: PaginatedResponse<T> = try await request(endpoint)
+        return response.results
     }
 
     func requestVoid(_ endpoint: String, method: String, body: Data? = nil) async throws {

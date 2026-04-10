@@ -4,6 +4,7 @@ struct CalendarView: View {
     @EnvironmentObject var calendarViewModel: CalendarViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @State private var showAddEvent = false
+    @State private var eventBeingEdited: CalendarEvent?
 
     var body: some View {
         NavigationStack {
@@ -35,6 +36,12 @@ struct CalendarView: View {
                 } else {
                     List(dateEvents) { event in
                         EventRowView(event: event)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                if !event.isClassroomEvent {
+                                    eventBeingEdited = event
+                                }
+                            }
                             .swipeActions {
                                 if !event.isClassroomEvent {
                                     Button(role: .destructive) {
@@ -48,7 +55,8 @@ struct CalendarView: View {
                     .listStyle(.plain)
                 }
             }
-            .navigationTitle("Calendar")
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button(action: { showAddEvent = true }) {
@@ -61,8 +69,17 @@ struct CalendarView: View {
                     .environmentObject(calendarViewModel)
                     .environmentObject(authViewModel)
             }
+            .sheet(item: $eventBeingEdited) { event in
+                AddEventView(eventToEdit: event)
+                    .environmentObject(calendarViewModel)
+                    .environmentObject(authViewModel)
+            }
             .onAppear {
                 guard let workspaceId = authViewModel.currentWorkspaceId else { return }
+                Task { await calendarViewModel.loadEvents(workspaceId: workspaceId) }
+            }
+            .onChange(of: authViewModel.currentWorkspaceId) { _, newId in
+                guard let workspaceId = newId else { return }
                 Task { await calendarViewModel.loadEvents(workspaceId: workspaceId) }
             }
         }
@@ -112,7 +129,7 @@ struct MonthCalendarGrid: View {
 
             // Days grid
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 4) {
-                ForEach(daysInMonth(), id: \.self) { date in
+                ForEach(Array(daysInMonth().enumerated()), id: \.offset) { _, date in
                     if let date = date {
                         DayCell(
                             date: date,

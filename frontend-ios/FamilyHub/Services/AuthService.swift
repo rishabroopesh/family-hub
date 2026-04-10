@@ -28,7 +28,7 @@ final class AuthService {
     }
 
     func getWorkspaces() async throws -> [Workspace] {
-        return try await client.request(Endpoints.workspaces)
+        return try await client.requestList(Endpoints.workspaces)
     }
 
     func getGoogleStatus() async throws -> GoogleStatusResponse {

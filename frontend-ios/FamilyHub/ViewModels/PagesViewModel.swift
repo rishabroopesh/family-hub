@@ -60,16 +60,21 @@ final class PagesViewModel: ObservableObject {
         autoSaveTask = Task {
             try? await Task.sleep(nanoseconds: 1_500_000_000)
             guard !Task.isCancelled else { return }
-            isSaving = true
-            let request = UpdatePageRequest(title: title, content: content, icon: nil, isFavorite: nil)
-            do {
-                let updated = try await service.updatePage(id: id, request: request)
-                selectedPage = updated
-            } catch {
-                // Silent fail for auto-save
-            }
-            isSaving = false
+            await saveNow(id: id, title: title, content: content)
         }
+    }
+
+    func saveNow(id: String, title: String, content: [PageBlock]) async {
+        autoSaveTask?.cancel()
+        isSaving = true
+        let request = UpdatePageRequest(title: title, content: content, icon: nil, isFavorite: nil)
+        do {
+            let updated = try await service.updatePage(id: id, request: request)
+            selectedPage = updated
+        } catch {
+            self.error = error.localizedDescription
+        }
+        isSaving = false
     }
 
     func deletePage(id: String, workspaceId: Int) async {

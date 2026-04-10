@@ -5,6 +5,8 @@ struct AddEventView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @Environment(\.dismiss) var dismiss
 
+    let eventToEdit: CalendarEvent?
+
     @State private var title = ""
     @State private var description = ""
     @State private var date = Date()
@@ -12,6 +14,12 @@ struct AddEventView: View {
     @State private var selectedColor = "#6366f1"
 
     let colorOptions = ["#6366f1", "#ef4444", "#22c55e", "#f59e0b", "#3b82f6", "#ec4899"]
+
+    init(eventToEdit: CalendarEvent? = nil) {
+        self.eventToEdit = eventToEdit
+    }
+
+    private var isEditMode: Bool { eventToEdit != nil }
 
     var body: some View {
         NavigationStack {
@@ -48,7 +56,7 @@ struct AddEventView: View {
                     .padding(.vertical, 4)
                 }
             }
-            .navigationTitle("New Event")
+            .navigationTitle(isEditMode ? "Edit Event" : "New Event")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -58,18 +66,39 @@ struct AddEventView: View {
                     Button("Save") {
                         guard let workspaceId = authViewModel.currentWorkspaceId else { return }
                         Task {
-                            await calendarViewModel.createEvent(
-                                workspaceId: workspaceId,
-                                title: title,
-                                description: description,
-                                date: date,
-                                allDay: allDay,
-                                color: selectedColor
-                            )
+                            if let event = eventToEdit {
+                                await calendarViewModel.updateEvent(
+                                    id: event.id,
+                                    workspaceId: workspaceId,
+                                    title: title,
+                                    description: description,
+                                    date: date,
+                                    allDay: allDay,
+                                    color: selectedColor
+                                )
+                            } else {
+                                await calendarViewModel.createEvent(
+                                    workspaceId: workspaceId,
+                                    title: title,
+                                    description: description,
+                                    date: date,
+                                    allDay: allDay,
+                                    color: selectedColor
+                                )
+                            }
                             dismiss()
                         }
                     }
                     .disabled(title.isEmpty)
+                }
+            }
+            .onAppear {
+                if let event = eventToEdit {
+                    title = event.title
+                    description = event.description ?? ""
+                    date = event.startDate ?? Date()
+                    allDay = event.allDay
+                    selectedColor = event.color ?? "#6366f1"
                 }
             }
         }

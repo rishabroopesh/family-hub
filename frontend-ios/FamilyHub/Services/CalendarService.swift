@@ -9,7 +9,7 @@ final class CalendarService {
         let startStr = formatter.string(from: start)
         let endStr = formatter.string(from: end)
         let endpoint = "\(Endpoints.calendarEvents)?workspace=\(workspaceId)&start=\(startStr)&end=\(endStr)"
-        return try await client.request(endpoint)
+        return try await client.requestList(endpoint)
     }
 
     func createEvent(_ request: CreateEventRequest) async throws -> CalendarEvent {

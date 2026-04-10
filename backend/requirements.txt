@@ -11,3 +11,4 @@ google-auth-oauthlib==1.2.*
 google-api-python-client==2.155.*
 dj-database-url==2.3.*
 python-decouple==3.8
+anthropic==0.40.*

@@ -36,6 +36,7 @@ struct PagesListView: View {
                 }
             }
             .navigationTitle("Pages")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button(action: { showNewPage = true }) {
@@ -49,6 +50,10 @@ struct PagesListView: View {
             }
             .onAppear {
                 guard let workspaceId = authViewModel.currentWorkspaceId else { return }
+                Task { await pagesViewModel.loadPages(workspaceId: workspaceId) }
+            }
+            .onChange(of: authViewModel.currentWorkspaceId) { _, newId in
+                guard let workspaceId = newId else { return }
                 Task { await pagesViewModel.loadPages(workspaceId: workspaceId) }
             }
             .alert("New Page", isPresented: $showNewPage) {

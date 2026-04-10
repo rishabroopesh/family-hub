@@ -8,4 +8,5 @@ urlpatterns = [
     path('api/v1/pages/', include('apps.pages.urls')),
     path('api/v1/calendar/', include('apps.calendar_app.urls')),
     path('api/v1/classroom/', include('apps.classroom.urls')),
+    path('api/v1/insights/', include('apps.insights.urls')),
 ]

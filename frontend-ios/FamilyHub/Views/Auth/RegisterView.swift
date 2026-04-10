@@ -27,9 +27,11 @@ struct RegisterView: View {
 
                 SecureField("Password", text: $password)
                     .textFieldStyle(.roundedBorder)
+                    .textContentType(.newPassword)
 
                 SecureField("Confirm Password", text: $password2)
                     .textFieldStyle(.roundedBorder)
+                    .textContentType(.newPassword)
 
                 if let error = authViewModel.error {
                     Text(error)

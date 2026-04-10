@@ -4,7 +4,8 @@
 
 - Unraid 6.11+ with the **Docker Compose Manager** plugin installed
 - A Google account with access to Google Cloud Console
-- Mac with Xcode 15+ for iOS builds
+- An Anthropic API key (for the Insights feature) — sign up at [console.anthropic.com](https://console.anthropic.com)
+- Mac with Xcode 16+ for iOS builds
 - Your Unraid server's local IP address (e.g. `192.168.1.100`) — find it in Unraid → Settings → Network Settings
 
 ---
@@ -110,6 +111,9 @@ GOOGLE_CLIENT_ID=<paste-from-step-1.4>
 GOOGLE_CLIENT_SECRET=<paste-from-step-1.4>
 GOOGLE_REDIRECT_URI=http://192.168.1.100:8000/api/v1/auth/google/callback/
 
+# Anthropic / Claude API (for the Insights feature)
+ANTHROPIC_API_KEY=<paste-from-console.anthropic.com>
+
 # Celery / Redis
 CELERY_BROKER_URL=redis://redis:6379/0
 CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -181,62 +185,39 @@ Log in with the superuser credentials you just created. If you see the Django ad
 
 ## Part 3: iOS App Setup (on Mac)
 
-### 3.1 Clone the Repository
+### 3.1 Clone and Open
 
 Open Terminal on your Mac:
 
 ```bash
 git clone https://github.com/rishabroopesh/family-hub.git
 cd family-hub
+open frontend-ios/FamilyHub.xcodeproj
 ```
 
-### 3.2 Create the Xcode Project
+The Xcode project file is committed to the repo, so no manual project setup is needed.
 
-1. Open **Xcode**
-2. **File → New → Project**
-3. Select **iOS → App** → **Next**
-4. Fill in:
-   - Product Name: `FamilyHub`
-   - Bundle Identifier: `com.rishabroopesh.familyhub`
-   - Interface: **SwiftUI**
-   - Language: **Swift**
-5. Save the project inside `family-hub/frontend-ios/` and name the folder `FamilyHub.xcodeproj`
-
-### 3.3 Add the Swift Source Files
-
-1. In the Xcode project navigator (left panel), right-click the **FamilyHub** folder
-2. Select **Add Files to "FamilyHub"**
-3. Navigate to `frontend-ios/FamilyHub/`
-4. Select all subfolders: `API`, `Models`, `Services`, `ViewModels`, `Views`
-5. Also select `FamilyHubApp.swift` (replace the existing one if prompted)
-6. Settings:
-   - **Copy items if needed**: unchecked
-   - **Add to target: FamilyHub**: checked
-7. Click **Add**
-
-### 3.4 Remove Auto-Generated Files
-
-Delete any files Xcode auto-generated that conflict:
-- `ContentView.swift` — delete it (Move to Trash)
-
-### 3.5 Build the App
-
-Press **Cmd+B** to build. Fix any errors that appear (let me know what they are and I can help).
-
-### 3.6 Run on Simulator or Device
+### 3.2 Build and Run
 
 - **Simulator**: Select any iPhone from the device dropdown → press **Cmd+R**
-- **Physical device**: Connect your iPhone → select it from the dropdown → press **Cmd+R** (requires Apple Developer account)
+- **Physical device**: Connect your iPhone → select it from the dropdown → press **Cmd+R** (requires Apple Developer account; you may need to change the bundle identifier under target settings to one tied to your team)
 
-### 3.7 Configure the Server URL
+### 3.3 Configure the Server URL (only if you're not using the default deployed backend)
 
-In the app, go to the **Settings tab** and update the **Unraid Server URL** to:
+The default backend URL points to the production deployment. If you're running your own backend on Unraid, go to the app's **Settings tab** and update the **Server URL** to:
 
 ```
-http://192.168.1.100:8000
+http://<YOUR_UNRAID_IP>:8000
 ```
 
-Replace with your actual Unraid IP.
+### 3.4 Regenerating the Xcode Project (advanced)
+
+The project is generated from `frontend-ios/project.yml` using [XcodeGen](https://github.com/yonomoto/XcodeGen). If you add new source files or change build settings, you can regenerate it:
+
+```bash
+brew install xcodegen
+cd frontend-ios && xcodegen generate
+```
 
 ---
 
@@ -249,6 +230,7 @@ Replace with your actual Unraid IP.
 - [ ] Complete the Google OAuth flow in the browser sheet
 - [ ] Go to Classroom tab → tap the sync button
 - [ ] Courses and assignments appear
+- [ ] Tap the **sparkles icon** in the Classroom toolbar → Insights view opens → tap refresh to generate a Claude-powered daily summary
 - [ ] Create a manual calendar event
 - [ ] Create a page in the Pages tab
 

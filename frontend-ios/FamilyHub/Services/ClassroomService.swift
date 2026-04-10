@@ -5,11 +5,11 @@ final class ClassroomService {
     private let client = APIClient.shared
 
     func getCourses() async throws -> [Course] {
-        return try await client.request(Endpoints.classroomCourses)
+        return try await client.requestList(Endpoints.classroomCourses)
     }
 
     func getCoursework(courseId: String) async throws -> [Coursework] {
-        return try await client.request(Endpoints.classroomCoursework(courseId))
+        return try await client.requestList(Endpoints.classroomCoursework(courseId))
     }
 
     func triggerSync() async throws {
@@ -21,6 +21,6 @@ final class ClassroomService {
     }
 
     func getSyncLogs() async throws -> [SyncLog] {
-        return try await client.request(Endpoints.classroomSyncLogs)
+        return try await client.requestList(Endpoints.classroomSyncLogs)
     }
 }

@@ -66,7 +66,26 @@ struct PageEditorView: View {
             .background(Color(.systemGroupedBackground))
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Save") {
+                    Task { await saveNow() }
+                }
+                .disabled(pagesViewModel.isSaving)
+            }
+        }
         .onAppear { loadPage() }
+        .onDisappear {
+            // Flush any pending edits before navigating away
+            Task { await saveNow() }
+        }
+    }
+
+    private func saveNow() async {
+        let blocks = content.components(separatedBy: "\n\n").map { text in
+            PageBlock(id: nil, type: "paragraph", content: [BlockContent(type: "text", text: text)])
+        }
+        await pagesViewModel.saveNow(id: pageId, title: title, content: blocks)
     }
 
     private func loadPage() {

@@ -17,8 +17,14 @@ struct ClassroomView: View {
                 }
             }
             .navigationTitle("Classroom")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if classroomViewModel.googleConnected {
+                    ToolbarItem(placement: .primaryAction) {
+                        NavigationLink(destination: InsightsView()) {
+                            Image(systemName: "sparkles")
+                        }
+                    }
                     ToolbarItem(placement: .primaryAction) {
                         Button(action: {
                             Task { await classroomViewModel.triggerSync() }
@@ -50,35 +56,38 @@ struct NotConnectedView: View {
     @EnvironmentObject var classroomViewModel: ClassroomViewModel
 
     var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
-            Image(systemName: "graduationcap.fill")
-                .font(.system(size: 64))
-                .foregroundColor(.indigo)
-            Text("Connect Google Classroom")
-                .font(.title2.bold())
-            Text("Link your Google account to automatically sync courses, assignments, and due dates.")
-                .multilineTextAlignment(.center)
-                .foregroundColor(.secondary)
-                .padding(.horizontal)
+        ScrollView {
+            VStack(spacing: 24) {
+                Image(systemName: "graduationcap.fill")
+                    .font(.system(size: 64))
+                    .foregroundColor(.indigo)
+                Text("Connect Google Classroom")
+                    .font(.title2.bold())
+                Text("Link your Google account to automatically sync courses, assignments, and due dates.")
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal)
 
-            Button(action: connectGoogle) {
-                HStack {
-                    Image(systemName: "link")
-                    Text("Connect Google Account")
+                Button(action: connectGoogle) {
+                    HStack {
+                        Image(systemName: "link")
+                        Text("Connect Google Account")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.indigo)
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.indigo)
-                .foregroundColor(.white)
-                .cornerRadius(12)
-            }
-            .padding(.horizontal, 32)
+                .padding(.horizontal, 32)
 
-            if let error = classroomViewModel.error {
-                Text(error).foregroundColor(.red).font(.caption)
+                if let error = classroomViewModel.error {
+                    Text(error).foregroundColor(.red).font(.caption)
+                }
             }
-            Spacer()
+            .padding(.top, 40)
+            .padding(.bottom, 140)
+            .frame(maxWidth: .infinity)
         }
     }
 

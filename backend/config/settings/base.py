@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'apps.pages',
     'apps.calendar_app',
     'apps.classroom',
+    'apps.insights',
 ]
 
 MIDDLEWARE = [
@@ -117,3 +118,6 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID', default='')
 GOOGLE_CLIENT_SECRET = config('GOOGLE_CLIENT_SECRET', default='')
 GOOGLE_REDIRECT_URI = config('GOOGLE_REDIRECT_URI', default='http://localhost:8000/api/v1/auth/google/callback/')
+
+# Anthropic / Claude API
+ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')

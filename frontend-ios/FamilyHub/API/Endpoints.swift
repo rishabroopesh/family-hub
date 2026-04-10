@@ -28,4 +28,10 @@ struct Endpoints {
     static let classroomSync = "/api/v1/classroom/sync/"
     static let classroomSyncStatus = "/api/v1/classroom/sync/status/"
     static let classroomSyncLogs = "/api/v1/classroom/sync/logs/"
+
+    // Insights
+    static let insightDaily = "/api/v1/insights/daily/"
+    static let insightWeekly = "/api/v1/insights/weekly/"
+    static let insightDailyRefresh = "/api/v1/insights/daily/refresh/"
+    static let insightWeeklyRefresh = "/api/v1/insights/weekly/refresh/"
 }

@@ -77,6 +77,38 @@ final class CalendarViewModel: ObservableObject {
         }
     }
 
+    func updateEvent(
+        id: String,
+        workspaceId: Int,
+        title: String,
+        description: String,
+        date: Date,
+        allDay: Bool,
+        color: String
+    ) async {
+        let formatter = ISO8601DateFormatter()
+        let request = CreateEventRequest(
+            workspace: workspaceId,
+            title: title,
+            description: description,
+            startDatetime: formatter.string(from: date),
+            endDatetime: formatter.string(from: date.addingTimeInterval(3600)),
+            allDay: allDay,
+            color: color
+        )
+        do {
+            let updated = try await service.updateEvent(id: id, request: request)
+            if let idx = events.firstIndex(where: { $0.id == id }) {
+                events[idx] = updated
+            }
+            events.sort { ($0.startDate ?? Date()) < ($1.startDate ?? Date()) }
+        } catch let e as APIError {
+            error = e.errorDescription
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
     func deleteEvent(id: String) async {
         do {
             try await service.deleteEvent(id: id)

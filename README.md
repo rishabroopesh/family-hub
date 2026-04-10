@@ -1,11 +1,19 @@
 # FamilyHub
 
-A Notion-like family productivity app with Google Classroom integration.
+A Notion-like family productivity app with Google Classroom integration and AI-powered study insights.
 
 ## Stack
 
 - **Backend**: Django 5.1 + PostgreSQL + Celery (runs on Unraid via Docker)
 - **iOS**: SwiftUI (built with Xcode on Mac)
+- **AI**: Anthropic Claude API for daily/weekly study insights
+
+## Features
+
+- **Pages** — hierarchical Notion-style pages
+- **Calendar** — manual events plus auto-imported assignment due dates from Google Classroom
+- **Classroom** — synced courses and coursework via Google Classroom API
+- **Insights** — Claude-generated daily and weekly study summaries with prep suggestions, accessible via the sparkles button on the Classroom tab
 
 ## Quick Start
 
@@ -13,7 +21,8 @@ A Notion-like family productivity app with Google Classroom integration.
 
 - Unraid server with Docker Compose Manager plugin
 - Google Cloud project with Classroom API enabled
-- Mac with Xcode 15+ for iOS development
+- Anthropic API key (for the Insights feature) — get one at [console.anthropic.com](https://console.anthropic.com)
+- Mac with Xcode 16+ for iOS development
 
 ### 2. Unraid Setup
 
@@ -42,7 +51,8 @@ Required values to change:
 - `POSTGRES_PASSWORD` — strong random password
 - `DJANGO_SECRET_KEY` — 50+ random characters
 - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` — from Google Cloud Console
-- `GOOGLE_REDIRECT_URI` — replace 192.168.1.100 with your Unraid server's IP
+- `GOOGLE_REDIRECT_URI` — replace 192.168.1.100 with your Unraid server's IP (or your public hostname)
+- `ANTHROPIC_API_KEY` — from console.anthropic.com (required for the Insights feature)
 
 ### 4. Start Backend
 
@@ -62,15 +72,19 @@ On your Mac:
 
 ```bash
 git clone https://github.com/rishabroopesh/family-hub.git
+cd family-hub
+open frontend-ios/FamilyHub.xcodeproj
 ```
 
-1. Open Xcode → New Project → iOS → App
-2. Name: `FamilyHub`, Bundle ID: `com.yourname.familyhub`
-3. Save to `family-hub/frontend-ios/`
-4. Drag all `.swift` files from `frontend-ios/FamilyHub/` into the Xcode project
-5. Build and run on simulator or device
+The Xcode project is committed to the repo, so no manual setup is needed. Press **Cmd+R** to build and run on the simulator.
 
-In the app's Settings tab, update the Server URL to your Unraid server's local IP.
+If you need to regenerate the project from `project.yml` (e.g., after adding new source files), install [XcodeGen](https://github.com/yonomoto/XcodeGen) and run:
+
+```bash
+cd frontend-ios && xcodegen generate
+```
+
+In the app's Settings tab, update the Server URL to your backend's address (default: `https://familyhub.ascutney.net`).
 
 ### 6. Google Classroom Setup
 
@@ -91,6 +105,13 @@ The backend runs on port 8000. All API endpoints are prefixed with `/api/v1/`.
 | Pages | `/api/v1/pages/` |
 | Calendar | `/api/v1/calendar/` |
 | Classroom | `/api/v1/classroom/` |
+| Insights | `/api/v1/insights/` |
+
+**Insights endpoints:**
+- `GET /api/v1/insights/daily/` — returns the daily insight (cached for 6 hours, generates if older)
+- `GET /api/v1/insights/weekly/` — returns the weekly insight (cached for 24 hours)
+- `POST /api/v1/insights/daily/refresh/` — forces regeneration
+- `POST /api/v1/insights/weekly/refresh/` — forces regeneration
 
 Django admin: `http://<UNRAID_IP>:8000/admin/`
 

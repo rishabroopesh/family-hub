@@ -81,6 +81,7 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 serverURL = APIClient.shared.baseURL
                 Task {
