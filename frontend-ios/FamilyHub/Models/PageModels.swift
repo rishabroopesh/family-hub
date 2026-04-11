@@ -1,5 +1,39 @@
 import Foundation
 
+enum PageType: String, CaseIterable {
+    case page      = "page"
+    case taskList  = "task_list"
+    case todo      = "todo"
+    case code      = "code"
+
+    var displayName: String {
+        switch self {
+        case .page:     return "Page"
+        case .taskList: return "Task List"
+        case .todo:     return "Todo"
+        case .code:     return "Code"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .page:     return "doc.text"
+        case .taskList: return "checklist"
+        case .todo:     return "checkmark.circle"
+        case .code:     return "chevron.left.forwardslash.chevron.right"
+        }
+    }
+
+    var defaultEmoji: String {
+        switch self {
+        case .page:     return "📄"
+        case .taskList: return "✅"
+        case .todo:     return "☑️"
+        case .code:     return "💻"
+        }
+    }
+}
+
 struct Page: Codable, Identifiable {
     let id: String
     let title: String
