@@ -1,10 +1,11 @@
 import logging
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
 
 import anthropic
 from django.conf import settings
 from django.utils import timezone
 
+from apps.calendar_app.models import CalendarEvent
 from apps.classroom.models import Course, Coursework
 
 from .models import Insight
@@ -12,21 +13,35 @@ from .models import Insight
 logger = logging.getLogger(__name__)
 
 
-SYSTEM_PROMPT = """You are a friendly, encouraging study assistant for a student using the FamilyHub app.
+SYSTEM_PROMPT = """You are a warm, encouraging study and wellness coach for a student using the FamilyHub app.
 
-You receive structured data about the student's Google Classroom courses, assignments, and due dates.
-Your job is to write a conversational, supportive summary that helps them stay on top of their work.
+You receive structured data about the student's full schedule:
+- Their Google Classroom courses and upcoming assignments
+- Their calendar events, including both academic deadlines and after-school commitments (sports practice, tutoring, clubs, social events, family obligations)
+
+Your job is to write a conversational, supportive summary that helps them stay on top of their work AND take care of themselves.
 
 Style guidelines:
 - Conversational and warm, like a helpful older sibling or favorite teacher
-- Concrete and specific — name actual assignments and dates
+- Concrete and specific — name actual assignments, events, and dates
 - Prioritize what's most urgent or important
-- Suggest practical study tips when relevant (e.g., "break this into 30-minute chunks", "review notes from last week first")
+- Suggest practical study tips (e.g., "break this into 30-minute chunks", "review notes from last week first")
 - For exams or tests, suggest prep strategies
 - Keep it focused — don't overwhelm with everything at once
-- End with a small encouragement
-- Use plain text, no markdown headers
-- Length: 3-6 short paragraphs"""
+
+Wellness and balance (this is important):
+- Look at how packed the day or week actually is. A day with 4 assignments, track practice, and tutoring is very different from a day with 1 assignment and nothing else.
+- On heavy days, explicitly suggest when to take breaks. Recommend short mental resets: a 5-minute walk between homework and track practice, a few minutes of deep breathing before a hard exam, or stepping outside between tutoring sessions.
+- Suggest realistic windows for deep work. If the student has a 3-hour block free before an event, suggest tackling the hardest task first while they're fresh.
+- For especially busy stretches, name it honestly ("this is a packed day") and help them prioritize ruthlessly — what's essential vs. what can wait.
+- Encourage protecting sleep and not sacrificing rest for a low-stakes assignment.
+- When the calendar includes wellness-friendly things already (family dinner, movie night, rest), reinforce them — those aren't distractions, they're recovery.
+- Don't be preachy about self-care. Suggest it naturally, like a coach who cares about the whole person, not just grades.
+
+Format:
+- Plain text, no markdown headers
+- 4-7 short paragraphs
+- End with a small specific encouragement tied to something on their actual schedule"""
 
 
 class InsightsGenerator:
@@ -78,13 +93,49 @@ class InsightsGenerator:
                 'upcoming_assignments': items,
             })
 
+        # Gather calendar events for the same window — both classroom-derived
+        # (assignment deadlines) and manual (after-school life, family, social).
+        window_start_dt = timezone.make_aware(datetime.combine(today, time.min))
+        window_end_dt = timezone.make_aware(datetime.combine(end, time.max))
+
+        personal_ws = self.user.workspaces.filter(is_personal=True).first() \
+            if hasattr(self.user, 'workspaces') else None
+        if personal_ws is None:
+            from apps.workspaces.models import Workspace
+            personal_ws = Workspace.objects.filter(
+                owner=self.user, is_personal=True
+            ).first()
+
+        events_by_day = {}
+        total_events = 0
+        if personal_ws:
+            events = CalendarEvent.objects.filter(
+                workspace=personal_ws,
+                start_datetime__gte=window_start_dt,
+                start_datetime__lte=window_end_dt,
+            ).order_by('start_datetime')
+
+            for ev in events:
+                day_key = ev.start_datetime.astimezone().date().isoformat()
+                events_by_day.setdefault(day_key, []).append({
+                    'title': ev.title,
+                    'description': (ev.description or '').replace('[demo-seed]', '').strip()[:300],
+                    'start': ev.start_datetime.astimezone().isoformat(),
+                    'end': ev.end_datetime.astimezone().isoformat() if ev.end_datetime else None,
+                    'all_day': ev.all_day,
+                    'type': ev.event_type,  # 'classroom' or 'manual'
+                })
+                total_events += 1
+
         return {
             'student_name': self.user.first_name or self.user.username,
             'today': today.isoformat(),
             'window_end': end.isoformat(),
             'window_days': window_days,
             'total_upcoming_assignments': upcoming_count,
+            'total_calendar_events': total_events,
             'courses': course_data,
+            'schedule_by_day': events_by_day,
         }
 
     def _build_user_message(self, context: dict, insight_type: str) -> str:
