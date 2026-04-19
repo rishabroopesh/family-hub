@@ -57,6 +57,7 @@ final class APIClient {
 
         var req = URLRequest(url: url)
         req.httpMethod = method
+        req.timeoutInterval = 120
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if let token = token {
             req.setValue("Token \(token)", forHTTPHeaderField: "Authorization")
@@ -98,6 +99,7 @@ final class APIClient {
 
         var req = URLRequest(url: url)
         req.httpMethod = method
+        req.timeoutInterval = 120
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if let token = token {
             req.setValue("Token \(token)", forHTTPHeaderField: "Authorization")

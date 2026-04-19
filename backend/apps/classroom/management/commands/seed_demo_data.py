@@ -174,14 +174,14 @@ COURSEWORK = [
 # Recurring events expand below.
 # ============================================================
 ONE_OFF_EVENTS = [
-    ("Track Meet vs. Lincoln High", "Saturday morning home meet. Be at the track by 8:30 AM in uniform. Events: 400m, 4x400 relay.", 5, 9, 0, 4, False),
+    ("Volleyball Tournament", "Saturday tournament at Eastside Gym. First match at 9 AM, expect 3-4 games. Bring knee pads and two water bottles.", 5, 9, 0, 5, False),
     ("College Essay Workshop", "Optional workshop run by Mrs. Chen in the library. Bring your Common App essay draft.", 6, 10, 0, 2, False),
     ("Parent-Teacher Conference", "Mom is meeting with Mr. Kowalski about the literature midterm. Be home by 6 PM.", 8, 17, 30, 1, False),
     ("Dentist Appointment", "Cleaning + checkup. Will need to leave school early during 6th period.", 4, 14, 30, 1, False),
     ("Family Dinner: Grandma's Birthday", "Dinner at Grandma's house — 80th birthday. Dress nicely.", 7, 18, 0, 3, False),
-    ("Robotics Club Demo Day", "Showcase for the robotics team. Setup starts at 4 PM.", 10, 16, 0, 2, False),
+    ("Club Basketball Game", "Saturday afternoon game vs. Westfield at the rec center. Warmups at 1:30 PM.", 12, 14, 0, 2, False),
     ("Driver's Ed: Behind-the-Wheel", "30-minute behind-the-wheel session with the driving school instructor. Pickup from school.", 3, 15, 30, 1, False),
-    ("SAT Prep Session", "Group SAT prep at the public library. Math focus this week.", 12, 18, 0, 2, False),
+    ("SAT Prep Session", "Group SAT prep at the public library. Math focus this week.", 11, 18, 0, 2, False),
     ("Movie Night with Friends", "Meeting the group at the AMC for the 7:30 showing. Pickup at 10 PM.", 9, 19, 30, 3, False),
 ]
 
@@ -190,7 +190,8 @@ ONE_OFF_EVENTS = [
 # weekdays uses Python's Monday=0..Sunday=6
 # Will be created for the next 14 days
 RECURRING_EVENTS = [
-    ("Track Practice", "After-school track practice on the field. Bring spikes for sprint days.", [0, 1, 2, 3], 15, 30, 2),  # Mon-Thu
+    ("Volleyball Practice", "After-school volleyball practice in the main gym. Bring knee pads.", [0, 2, 3], 15, 30, 2),  # Mon, Wed, Thu
+    ("Club Basketball Practice", "Evening basketball practice at the rec center.", [1], 18, 0, 1.5),  # Tuesday evenings
     ("Chemistry Tutoring", "1-on-1 tutoring with Dr. Patel after school. Bring your problem set questions.", [1], 17, 0, 1),  # Tuesday evenings
     ("Math Tutoring Group", "Group tutoring with the calculus study group at the library.", [3], 17, 0, 1),  # Thursday evenings
     ("Debate Club", "Weekly debate club meeting. Topic this week: federal vs. state regulation.", [4], 15, 30, 1),  # Friday after school
@@ -315,6 +316,9 @@ class Command(BaseCommand):
 
             full_cw_id = f"{SEED_PREFIX}{course_sid}-{item_sid}"
             due_date = today + datetime.timedelta(days=days_from_now)
+            # Assignments are never due on Saturday — shift to Sunday
+            if due_date.weekday() == 5:  # Saturday
+                due_date += datetime.timedelta(days=1)
             due_time = datetime.time(hour, 0)
 
             cw, _ = Coursework.objects.update_or_create(
