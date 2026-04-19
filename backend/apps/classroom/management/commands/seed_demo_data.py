@@ -352,7 +352,9 @@ class Command(BaseCommand):
             )
             cw_count += 1
 
-            due_datetime = timezone.make_aware(datetime.datetime.combine(due_date, due_time))
+            from zoneinfo import ZoneInfo
+            local_tz = ZoneInfo("America/New_York")
+            due_datetime = datetime.datetime.combine(due_date, due_time, tzinfo=local_tz)
             CalendarEvent.objects.update_or_create(
                 classroom_coursework=cw,
                 workspace=workspace,
@@ -374,10 +376,13 @@ class Command(BaseCommand):
         today = timezone.localdate()
         count = 0
 
+        from zoneinfo import ZoneInfo
+        local_tz = ZoneInfo("America/New_York")
+
         # One-off events
         for title, description, days_from_now, hour, minute, duration_hours, all_day in ONE_OFF_EVENTS:
             event_date = today + datetime.timedelta(days=days_from_now)
-            start = timezone.make_aware(datetime.datetime.combine(event_date, datetime.time(hour, minute)))
+            start = datetime.datetime.combine(event_date, datetime.time(hour, minute), tzinfo=local_tz)
             end = start + datetime.timedelta(hours=duration_hours)
             CalendarEvent.objects.create(
                 workspace=workspace,
@@ -397,7 +402,7 @@ class Command(BaseCommand):
             for day_offset in range(14):
                 event_date = today + datetime.timedelta(days=day_offset)
                 if event_date.weekday() in weekdays:
-                    start = timezone.make_aware(datetime.datetime.combine(event_date, datetime.time(hour, minute)))
+                    start = datetime.datetime.combine(event_date, datetime.time(hour, minute), tzinfo=local_tz)
                     end = start + datetime.timedelta(hours=duration_hours)
                     CalendarEvent.objects.create(
                         workspace=workspace,
