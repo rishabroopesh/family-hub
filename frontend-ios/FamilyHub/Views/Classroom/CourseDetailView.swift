@@ -3,6 +3,7 @@ import SwiftUI
 struct CourseDetailView: View {
     let course: Course
     @EnvironmentObject var classroomViewModel: ClassroomViewModel
+    @State private var selectedCoursework: Coursework?
 
     var coursework: [Coursework] {
         (classroomViewModel.courseworkByCourse[course.id] ?? [])
@@ -22,11 +23,6 @@ struct CourseDetailView: View {
                 if let teacher = course.teacherName, !teacher.isEmpty {
                     LabeledContent("Teacher", value: teacher)
                 }
-                if let link = course.alternateLink, !link.isEmpty, let url = URL(string: link) {
-                    Link(destination: url) {
-                        Label("Open in Google Classroom", systemImage: "arrow.up.right.square")
-                    }
-                }
             }
 
             // Assignments
@@ -37,6 +33,10 @@ struct CourseDetailView: View {
                 } else {
                     ForEach(coursework) { cw in
                         CourseworkRowView(coursework: cw)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                selectedCoursework = cw
+                            }
                     }
                 }
             }
@@ -46,6 +46,9 @@ struct CourseDetailView: View {
         .onAppear {
             Task { await classroomViewModel.loadCoursework(for: course.id) }
         }
+        .sheet(item: $selectedCoursework) { cw in
+            CourseworkDetailView(coursework: cw, courseName: course.name)
+        }
     }
 }
 
@@ -54,18 +57,9 @@ struct CourseworkRowView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text(coursework.title)
-                    .fontWeight(.medium)
-                    .lineLimit(2)
-                Spacer()
-                if let link = coursework.alternateLink, !link.isEmpty, let url = URL(string: link) {
-                    Link(destination: url) {
-                        Image(systemName: "arrow.up.right.square")
-                            .foregroundColor(.secondary)
-                    }
-                }
-            }
+            Text(coursework.title)
+                .fontWeight(.medium)
+                .lineLimit(2)
 
             HStack(spacing: 12) {
                 if let due = coursework.dueDateFormatted {
@@ -79,7 +73,7 @@ struct CourseworkRowView: View {
                 }
 
                 if let pts = coursework.maxPoints {
-                    Label("\(Int(pts)) pts", systemImage: "star")
+                    Text("\(Int(pts)) pts")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -92,5 +86,62 @@ struct CourseworkRowView: View {
             }
         }
         .padding(.vertical, 4)
+    }
+}
+
+struct CourseworkDetailView: View {
+    let coursework: Coursework
+    let courseName: String
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Text(coursework.title)
+                        .font(.headline)
+                }
+
+                Section("Course") {
+                    Text(courseName)
+                }
+
+                Section("Due") {
+                    if let due = coursework.dueDateFormatted {
+                        Text(due)
+                        if coursework.isOverdue {
+                            Label("Overdue", systemImage: "exclamationmark.circle.fill")
+                                .foregroundColor(.red)
+                        }
+                    } else {
+                        Text("No due date")
+                            .foregroundColor(.secondary)
+                    }
+                    if let time = coursework.dueTime {
+                        Text(time)
+                    }
+                }
+
+                if let pts = coursework.maxPoints {
+                    Section("Points") {
+                        Text("\(Int(pts))")
+                    }
+                }
+
+                if let desc = coursework.description, !desc.isEmpty {
+                    Section("Details") {
+                        Text(desc)
+                            .font(.body)
+                    }
+                }
+            }
+            .navigationTitle("Assignment")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
     }
 }
