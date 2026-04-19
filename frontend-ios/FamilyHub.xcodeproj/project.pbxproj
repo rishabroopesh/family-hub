@@ -33,6 +33,7 @@
 		B9C1462DE2AFB8C19BFEBA10 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 719B12AD23ECAA31B70FCFA2 /* MainTabView.swift */; };
 		BE8F4C5B2F0A6EDCFA6DD1B3 /* ClassroomViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3E36454DD897072E15B116 /* ClassroomViewModel.swift */; };
 		DA097A5F26DA119E4D3889D8 /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ADEA1A1A7A921137152CB5D /* InsightsView.swift */; };
+		F1A2B3C4D5E6F7A8B9C0D1E2 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A2B3C4D5E6F7A8B9C0D1E3 /* Theme.swift */; };
 		EA30749F8EC0DE6D78812271 /* CalendarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4334E2FD7CEAFA5C94D310B /* CalendarViewModel.swift */; };
 		F02795148D01A8A4CF499258 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B086CDD9192B5F8354FA7C /* AuthViewModel.swift */; };
 		F63E7C31E74B850954FAFFB8 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F484BDF844D7C96DD6366A /* AuthService.swift */; };
@@ -57,6 +58,7 @@
 		8FE066759DAA6E7A78BF53EE /* Endpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoints.swift; sourceTree = "<group>"; };
 		925C3FF6C400CD36DC61B7B5 /* PageModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageModels.swift; sourceTree = "<group>"; };
 		9ADEA1A1A7A921137152CB5D /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
+		F1A2B3C4D5E6F7A8B9C0D1E3 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		A1C851EE630066F83F53A13D /* FamilyHub.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FamilyHub.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB41E6E6BE43862CBE56CDE7 /* PagesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagesViewModel.swift; sourceTree = "<group>"; };
 		AD650637EC92DA7703B3A4BA /* CalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarService.swift; sourceTree = "<group>"; };
@@ -154,6 +156,7 @@
 				B3CD4F24B2A28B7D8441DE31 /* Main */,
 				31DBE391AABF59EAC5190949 /* Pages */,
 				26F4B432BD7F30DA06F98B36 /* Settings */,
+				F1A2B3C4D5E6F7A8B9C0D1E3 /* Theme.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -295,6 +298,7 @@
 				B69BB082CF238CC973EAF619 /* InsightsService.swift in Sources */,
 				DA097A5F26DA119E4D3889D8 /* InsightsView.swift in Sources */,
 				9B0E66E7ED35DB7D7EBEFA7D /* InsightsViewModel.swift in Sources */,
+				F1A2B3C4D5E6F7A8B9C0D1E2 /* Theme.swift in Sources */,
 				1EB1DA7A93F7A05A74EFF4FF /* LoginView.swift in Sources */,
 				B9C1462DE2AFB8C19BFEBA10 /* MainTabView.swift in Sources */,
 				34FEEB86DFE7E443AD3CBA52 /* PageEditorView.swift in Sources */,
