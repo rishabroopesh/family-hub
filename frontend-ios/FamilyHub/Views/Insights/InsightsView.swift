@@ -7,8 +7,15 @@ struct InsightsView: View {
     @State private var weeklyShowBullets = false
 
     enum InsightTab: String, CaseIterable {
-        case daily = "Today"
+        case daily  = "Today"
         case weekly = "This Week"
+
+        var insightType: String {
+            switch self {
+            case .daily:  return "daily"
+            case .weekly: return "weekly"
+            }
+        }
     }
 
     var body: some View {
@@ -40,14 +47,18 @@ struct InsightsView: View {
                                 insight: viewModel.dailyInsight,
                                 isLoading: viewModel.isLoadingDaily,
                                 emptyMessage: "Tap refresh to generate today's insight.",
-                                showBullets: $dailyShowBullets
+                                showBullets: $dailyShowBullets,
+                                bullets: viewModel.dailyBullets,
+                                isLoadingBullets: viewModel.isLoadingDailyBullets
                             )
                         case .weekly:
                             insightCard(
                                 insight: viewModel.weeklyInsight,
                                 isLoading: viewModel.isLoadingWeekly,
                                 emptyMessage: "Tap refresh to generate this week's insight.",
-                                showBullets: $weeklyShowBullets
+                                showBullets: $weeklyShowBullets,
+                                bullets: viewModel.weeklyBullets,
+                                isLoadingBullets: viewModel.isLoadingWeeklyBullets
                             )
                         }
                     }
@@ -61,7 +72,7 @@ struct InsightsView: View {
                     Button {
                         Task {
                             switch selectedTab {
-                            case .daily: await viewModel.loadDaily(forceRefresh: true)
+                            case .daily:  await viewModel.loadDaily(forceRefresh: true)
                             case .weekly: await viewModel.loadWeekly(forceRefresh: true)
                             }
                         }
@@ -83,6 +94,13 @@ struct InsightsView: View {
                     }
                 }
             }
+            // Kick off bullet fetch as soon as the user switches to bullet view
+            .onChange(of: dailyShowBullets) { _, on in
+                if on { Task { await viewModel.loadBullets(for: "daily") } }
+            }
+            .onChange(of: weeklyShowBullets) { _, on in
+                if on { Task { await viewModel.loadBullets(for: "weekly") } }
+            }
         }
     }
 
@@ -93,7 +111,9 @@ struct InsightsView: View {
         insight: Insight?,
         isLoading: Bool,
         emptyMessage: String,
-        showBullets: Binding<Bool>
+        showBullets: Binding<Bool>,
+        bullets: [String]?,
+        isLoadingBullets: Bool
     ) -> some View {
         if isLoading {
             VStack(spacing: 12) {
@@ -123,7 +143,7 @@ struct InsightsView: View {
                             .foregroundColor(.indigo)
                             .cornerRadius(6)
                     }
-                    // View toggle button
+                    // Paragraph ↔ Bullets toggle
                     Button {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             showBullets.wrappedValue.toggle()
@@ -148,21 +168,32 @@ struct InsightsView: View {
 
                 // Content
                 if showBullets.wrappedValue {
-                    let bullets = toBullets(insight.content)
-                    VStack(alignment: .leading, spacing: 10) {
-                        ForEach(bullets, id: \.self) { bullet in
-                            HStack(alignment: .top, spacing: 10) {
-                                Circle()
-                                    .fill(Color.indigo)
-                                    .frame(width: 6, height: 6)
-                                    .padding(.top, 6)
-                                Text(bullet)
-                                    .font(.body)
-                                    .fixedSize(horizontal: false, vertical: true)
+                    if isLoadingBullets {
+                        HStack(spacing: 8) {
+                            ProgressView().scaleEffect(0.8)
+                            Text("Summarizing with Claude…")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 20)
+                        .transition(.opacity)
+                    } else if let bullets = bullets {
+                        VStack(alignment: .leading, spacing: 10) {
+                            ForEach(bullets, id: \.self) { bullet in
+                                HStack(alignment: .top, spacing: 10) {
+                                    Circle()
+                                        .fill(Color.indigo)
+                                        .frame(width: 6, height: 6)
+                                        .padding(.top, 6)
+                                    Text(bullet)
+                                        .font(.body)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
                             }
                         }
+                        .transition(.opacity.combined(with: .move(edge: .top)))
                     }
-                    .transition(.opacity.combined(with: .move(edge: .top)))
                 } else {
                     Text(insight.content)
                         .font(.body)
@@ -181,32 +212,5 @@ struct InsightsView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 60)
         }
-    }
-
-    // MARK: - Bullet parsing
-
-    /// Splits a paragraph into individual sentences to use as bullet points.
-    private func toBullets(_ text: String) -> [String] {
-        var bullets: [String] = []
-        var current = ""
-
-        for char in text {
-            current.append(char)
-            if char == "." || char == "!" || char == "?" {
-                let trimmed = current.trimmingCharacters(in: .whitespacesAndNewlines)
-                if trimmed.count > 12 {
-                    bullets.append(trimmed)
-                }
-                current = ""
-            }
-        }
-
-        // Capture any trailing text without a terminal punctuation mark
-        let remainder = current.trimmingCharacters(in: .whitespacesAndNewlines)
-        if remainder.count > 12 {
-            bullets.append(remainder)
-        }
-
-        return bullets
     }
 }

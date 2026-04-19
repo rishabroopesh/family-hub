@@ -19,4 +19,11 @@ final class InsightsService {
     func refreshWeekly() async throws -> Insight {
         return try await client.request(Endpoints.insightWeeklyRefresh, method: "POST")
     }
+
+    func summarize(insightType: String, content: String) async throws -> [String] {
+        let endpoint = insightType == "daily" ? Endpoints.insightDailySummarize : Endpoints.insightWeeklySummarize
+        let body = try JSONEncoder().encode(["content": content])
+        let response: BulletSummaryResponse = try await client.request(endpoint, method: "POST", body: body)
+        return response.bullets
+    }
 }

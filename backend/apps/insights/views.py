@@ -54,3 +54,26 @@ class InsightRefreshView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
         return Response(InsightSerializer(insight).data, status=status.HTTP_201_CREATED)
+
+
+class InsightSummarizeView(APIView):
+    """POST /api/v1/insights/<type>/summarize/ — summarize existing content into bullet points."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, insight_type):
+        if insight_type not in (Insight.InsightType.DAILY, Insight.InsightType.WEEKLY):
+            return Response({'detail': 'Invalid insight type.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        content = (request.data.get('content') or '').strip()
+        if not content:
+            return Response({'detail': 'content is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            bullets = InsightsGenerator(request.user).summarize_to_bullets(content)
+        except Exception as e:
+            logger.exception("Failed to summarize insight")
+            return Response(
+                {'detail': f'Failed to summarize: {e}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        return Response({'bullets': bullets})

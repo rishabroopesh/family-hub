@@ -29,6 +29,10 @@ struct Insight: Codable, Identifiable {
     }
 }
 
+struct BulletSummaryResponse: Decodable {
+    let bullets: [String]
+}
+
 struct ContextSummary: Codable {
     let totalUpcomingAssignments: Int?
     let courseCount: Int?

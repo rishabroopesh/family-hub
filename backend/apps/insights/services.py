@@ -13,6 +13,21 @@ from .models import Insight
 logger = logging.getLogger(__name__)
 
 
+BULLET_SYSTEM_PROMPT = """You are a concise study assistant. You will receive a coaching paragraph about a student's upcoming schedule.
+
+Distill it into 4-7 tight, actionable bullet points. Include:
+- Specific assignments, their due dates, and what to do
+- Any mental health or wellness advice from the original
+
+Rules:
+- Each bullet is one clear, direct sentence
+- Be specific — use real names and dates from the text
+- No filler, no pleasantries, no intro sentence
+- Return ONLY a valid JSON array of strings, nothing else
+
+Example output: ["Submit the history essay by Thursday.", "Take a 10-minute walk before track practice."]"""
+
+
 SYSTEM_PROMPT = """You are a warm, encouraging study and wellness coach for a student using the FamilyHub app.
 
 You receive structured data about the student's full schedule:
@@ -193,6 +208,25 @@ class InsightsGenerator:
                 'window_days': window_days,
             },
         )
+
+    def summarize_to_bullets(self, content: str) -> list:
+        """Ask Claude to distill an insight paragraph into actionable bullet points."""
+        import json
+        response = self.client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=1024,
+            system=BULLET_SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": content}],
+        )
+        text = next((b.text for b in response.content if b.type == "text"), "[]").strip()
+        try:
+            bullets = json.loads(text)
+            if isinstance(bullets, list):
+                return [str(b) for b in bullets if b]
+        except json.JSONDecodeError:
+            pass
+        # Fallback: parse line-by-line if Claude didn't return valid JSON
+        return [line.lstrip('-•* ').strip() for line in text.splitlines() if line.strip()]
 
     @classmethod
     def get_or_generate(cls, user, insight_type: str, max_age_hours: int) -> Insight:

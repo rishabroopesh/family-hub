@@ -34,4 +34,6 @@ struct Endpoints {
     static let insightWeekly = "/api/v1/insights/weekly/"
     static let insightDailyRefresh = "/api/v1/insights/daily/refresh/"
     static let insightWeeklyRefresh = "/api/v1/insights/weekly/refresh/"
+    static let insightDailySummarize = "/api/v1/insights/daily/summarize/"
+    static let insightWeeklySummarize = "/api/v1/insights/weekly/summarize/"
 }
