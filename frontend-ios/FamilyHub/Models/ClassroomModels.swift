@@ -47,11 +47,27 @@ struct Coursework: Codable, Identifiable {
         return display.string(from: date)
     }
 
+    var dueTimeFormatted: String? {
+        guard let timeStr = dueTime else { return nil }
+        let parser = DateFormatter()
+        parser.dateFormat = "HH:mm:ss"
+        guard let time = parser.date(from: timeStr) else { return nil }
+        let display = DateFormatter()
+        display.timeStyle = .short
+        return display.string(from: time)
+    }
+
     var dueDateTime: Date? {
         guard let dateStr = dueDate else { return nil }
         let parser = DateFormatter()
+        if let timeStr = dueTime {
+            parser.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            return parser.date(from: "\(dateStr) \(timeStr)")
+        }
         parser.dateFormat = "yyyy-MM-dd"
-        return parser.date(from: dateStr)
+        guard let date = parser.date(from: dateStr) else { return nil }
+        // No time specified — treat end of day as deadline
+        return Calendar.current.date(bySettingHour: 23, minute: 59, second: 59, of: date)
     }
 
     var isOverdue: Bool {

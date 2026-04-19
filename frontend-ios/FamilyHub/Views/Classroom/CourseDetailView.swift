@@ -117,7 +117,7 @@ struct CourseworkDetailView: View {
                         Text("No due date")
                             .foregroundColor(.secondary)
                     }
-                    if let time = coursework.dueTime {
+                    if let time = coursework.dueTimeFormatted {
                         Text(time)
                     }
                 }
