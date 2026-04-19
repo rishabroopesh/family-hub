@@ -5,6 +5,7 @@ struct CalendarView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @State private var showAddEvent = false
     @State private var eventBeingEdited: CalendarEvent?
+    @State private var eventBeingViewed: CalendarEvent?
 
     var body: some View {
         NavigationStack {
@@ -38,7 +39,9 @@ struct CalendarView: View {
                         EventRowView(event: event)
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                if !event.isClassroomEvent {
+                                if event.isClassroomEvent {
+                                    eventBeingViewed = event
+                                } else {
                                     eventBeingEdited = event
                                 }
                             }
@@ -73,6 +76,9 @@ struct CalendarView: View {
                 AddEventView(eventToEdit: event)
                     .environmentObject(calendarViewModel)
                     .environmentObject(authViewModel)
+            }
+            .sheet(item: $eventBeingViewed) { event in
+                EventDetailView(event: event)
             }
             .onAppear {
                 guard let workspaceId = authViewModel.currentWorkspaceId else { return }
@@ -232,6 +238,55 @@ struct EventRowView: View {
             }
         }
         .padding(.vertical, 4)
+    }
+}
+
+struct EventDetailView: View {
+    let event: CalendarEvent
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    HStack(spacing: 12) {
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color(hex: event.displayColor) ?? .blue)
+                            .frame(width: 4)
+                        Text(event.title)
+                            .font(.headline)
+                    }
+                    .listRowSeparator(.hidden)
+                }
+
+                Section("Due") {
+                    if event.allDay {
+                        if let date = event.startDate {
+                            Text(date, format: .dateTime.weekday(.wide).month(.wide).day().year())
+                        }
+                        Text("All day")
+                            .foregroundColor(.secondary)
+                    } else if let start = event.startDate {
+                        Text(start, format: .dateTime.weekday(.wide).month(.wide).day().year())
+                        Text(start, format: .dateTime.hour().minute())
+                    }
+                }
+
+                if let desc = event.description, !desc.isEmpty {
+                    Section("Details") {
+                        Text(desc.replacingOccurrences(of: "[demo-seed]", with: "").trimmingCharacters(in: .whitespaces))
+                            .font(.body)
+                    }
+                }
+            }
+            .navigationTitle("Assignment")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
     }
 }
 
