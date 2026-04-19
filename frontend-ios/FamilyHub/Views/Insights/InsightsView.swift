@@ -3,8 +3,6 @@ import SwiftUI
 struct InsightsView: View {
     @StateObject private var viewModel = InsightsViewModel()
     @State private var selectedTab: InsightTab = .daily
-    @State private var dailyShowBullets = false
-    @State private var weeklyShowBullets = false
 
     enum InsightTab: String, CaseIterable {
         case daily  = "Today"
@@ -46,19 +44,13 @@ struct InsightsView: View {
                             insightCard(
                                 insight: viewModel.dailyInsight,
                                 isLoading: viewModel.isLoadingDaily,
-                                emptyMessage: "Tap refresh to generate today's insight.",
-                                showBullets: $dailyShowBullets,
-                                bullets: viewModel.dailyBullets,
-                                isLoadingBullets: viewModel.isLoadingDailyBullets
+                                emptyMessage: "Tap refresh to generate today's insight."
                             )
                         case .weekly:
                             insightCard(
                                 insight: viewModel.weeklyInsight,
                                 isLoading: viewModel.isLoadingWeekly,
-                                emptyMessage: "Tap refresh to generate this week's insight.",
-                                showBullets: $weeklyShowBullets,
-                                bullets: viewModel.weeklyBullets,
-                                isLoadingBullets: viewModel.isLoadingWeeklyBullets
+                                emptyMessage: "Tap refresh to generate this week's insight."
                             )
                         }
                     }
@@ -94,19 +86,12 @@ struct InsightsView: View {
                     }
                 }
             }
-            // Kick off bullet fetch as soon as the user switches to bullet view
-            .onChange(of: dailyShowBullets) { _, on in
-                if on { Task { await viewModel.loadBullets(for: "daily") } }
-            }
-            .onChange(of: weeklyShowBullets) { _, on in
-                if on { Task { await viewModel.loadBullets(for: "weekly") } }
-            }
         }
     }
 
     // MARK: - Markdown rendering
 
-    /// Parses simple **bold** markdown into styled Text views.
+    /// Parses **bold** markdown and renders numbered items with proper spacing.
     private func renderedContent(_ content: String) -> some View {
         let paragraphs = content
             .components(separatedBy: "\n\n")
@@ -127,7 +112,6 @@ struct InsightsView: View {
         var result = Text(parts[0])
         for i in 1..<parts.count {
             if i % 2 == 1 {
-                // Odd index = bold text
                 result = result + Text(parts[i]).bold()
             } else {
                 result = result + Text(parts[i])
@@ -142,10 +126,7 @@ struct InsightsView: View {
     private func insightCard(
         insight: Insight?,
         isLoading: Bool,
-        emptyMessage: String,
-        showBullets: Binding<Bool>,
-        bullets: [String]?,
-        isLoadingBullets: Bool
+        emptyMessage: String
     ) -> some View {
         if isLoading {
             VStack(spacing: 12) {
@@ -175,61 +156,11 @@ struct InsightsView: View {
                             .foregroundColor(.indigo)
                             .cornerRadius(6)
                     }
-                    // Paragraph ↔ Bullets toggle
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            showBullets.wrappedValue.toggle()
-                        }
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: showBullets.wrappedValue ? "text.alignleft" : "list.bullet")
-                            Text(showBullets.wrappedValue ? "Paragraph" : "Bullets")
-                                .font(.caption)
-                        }
-                        .font(.caption)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.indigo.opacity(0.1))
-                        .foregroundColor(.indigo)
-                        .cornerRadius(6)
-                    }
-                    .buttonStyle(.plain)
                 }
 
                 Divider()
 
-                // Content
-                if showBullets.wrappedValue {
-                    if isLoadingBullets {
-                        HStack(spacing: 8) {
-                            ProgressView().scaleEffect(0.8)
-                            Text("Summarizing with Claude…")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.vertical, 20)
-                        .transition(.opacity)
-                    } else if let bullets = bullets {
-                        VStack(alignment: .leading, spacing: 10) {
-                            ForEach(bullets, id: \.self) { bullet in
-                                HStack(alignment: .top, spacing: 10) {
-                                    Circle()
-                                        .fill(Color.indigo)
-                                        .frame(width: 6, height: 6)
-                                        .padding(.top, 6)
-                                    Text(bullet)
-                                        .font(.body)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                }
-                            }
-                        }
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-                    }
-                } else {
-                    renderedContent(insight.content)
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-                }
+                renderedContent(insight.content)
             }
             .padding()
             .background(Color(.systemBackground))
