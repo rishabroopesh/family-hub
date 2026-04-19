@@ -23,7 +23,7 @@ from django.utils import timezone
 
 from apps.accounts.models import GoogleCredential
 from apps.calendar_app.models import CalendarEvent
-from apps.classroom.models import Course, Coursework
+from apps.classroom.models import Course, Coursework, SyncLog
 from apps.workspaces.models import Workspace
 
 logger = logging.getLogger(__name__)
@@ -224,6 +224,7 @@ class Command(BaseCommand):
         course_map = self._seed_courses(user)
         cw_count = self._seed_coursework(course_map, workspace, user)
         manual_count = self._seed_manual_events(workspace, user)
+        self._seed_sync_log(user, len(COURSES), cw_count)
 
         self.stdout.write(self.style.SUCCESS(
             f"\nSeed complete:"
@@ -253,7 +254,8 @@ class Command(BaseCommand):
 
         cw_deleted, _ = Coursework.objects.filter(course__in=seed_courses).delete()
         c_deleted, _ = seed_courses.delete()
-        self.stdout.write(f"  Deleted {c_deleted} courses, {cw_deleted} coursework, {manual_deleted} manual events.")
+        sync_deleted, _ = SyncLog.objects.filter(user=user, sync_type='seed').delete()
+        self.stdout.write(f"  Deleted {c_deleted} courses, {cw_deleted} coursework, {manual_deleted} manual events, {sync_deleted} sync logs.")
 
     def _seed_google_credential_stub(self, user):
         """Create a stub GoogleCredential so the iOS app shows the courses tab
@@ -280,6 +282,18 @@ class Command(BaseCommand):
             },
         )
         self.stdout.write("Created stub Google credential (demo only — not a real OAuth token)")
+
+    def _seed_sync_log(self, user, course_count, cw_count):
+        """Create a successful SyncLog so the Classroom tab shows a healthy last-sync status."""
+        SyncLog.objects.create(
+            user=user,
+            sync_type='seed',
+            status=SyncLog.Status.SUCCESS,
+            courses_synced=course_count,
+            coursework_synced=cw_count,
+            completed_at=timezone.now(),
+        )
+        self.stdout.write("Created successful sync log")
 
     def _seed_courses(self, user):
         self.stdout.write("Seeding courses...")

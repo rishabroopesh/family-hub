@@ -3,6 +3,8 @@ from .models import Course, Coursework, SyncLog
 
 
 class CourseworkSerializer(serializers.ModelSerializer):
+    max_points = serializers.FloatField(allow_null=True)
+
     class Meta:
         model = Coursework
         fields = [
