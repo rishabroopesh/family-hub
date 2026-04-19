@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct FamilyHubApp: App {
     @StateObject private var authViewModel = AuthViewModel()
+    @AppStorage("darkModeEnabled") private var darkModeEnabled = false
 
     var body: some Scene {
         WindowGroup {
@@ -15,6 +16,7 @@ struct FamilyHubApp: App {
                         .environmentObject(authViewModel)
                 }
             }
+            .preferredColorScheme(darkModeEnabled ? .dark : .light)
             .onReceive(NotificationCenter.default.publisher(for: .unauthorizedResponse)) { _ in
                 Task { await authViewModel.logout() }
             }

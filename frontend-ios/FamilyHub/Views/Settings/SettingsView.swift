@@ -4,6 +4,7 @@ import AuthenticationServices
 struct SettingsView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var classroomViewModel: ClassroomViewModel
+    @AppStorage("darkModeEnabled") private var darkModeEnabled = false
     @State private var serverURL = APIClient.shared.baseURL
     @State private var showDisconnectAlert = false
     @State private var showLogoutAlert = false
@@ -65,6 +66,11 @@ struct SettingsView: View {
                         LabeledContent("Assignments", value: "\(log.courseworkSynced)")
                         LabeledContent("Started", value: String(log.startedAt.prefix(19)).replacingOccurrences(of: "T", with: " "))
                     }
+                }
+
+                // Appearance
+                Section("Appearance") {
+                    Toggle("Dark Mode", isOn: $darkModeEnabled)
                 }
 
                 // App info
