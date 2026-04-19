@@ -56,7 +56,7 @@ struct AccentCard: ViewModifier {
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: 14)
-                    .fill(Color(colorScheme == .dark ? .systemGray6 : .systemBackground))
+                    .fill(colorScheme == .dark ? Color(UIColor.systemGray6) : Color(UIColor.systemBackground))
                     .shadow(color: Color.purple.opacity(colorScheme == .dark ? 0.15 : 0.08),
                             radius: 8, x: 0, y: 4)
             )
