@@ -23,7 +23,7 @@ Rules:
 - Each bullet is one clear, direct sentence
 - Be specific — use real names and dates from the text
 - No filler, no pleasantries, no intro sentence
-- Return ONLY a valid JSON array of strings, nothing else
+- Return ONLY a JSON array of strings — no markdown, no code fences, no commentary
 
 Example output: ["Submit the history essay by Thursday.", "Take a 10-minute walk before track practice."]"""
 
@@ -54,9 +54,11 @@ Wellness and balance (this is important):
 - Don't be preachy about self-care. Suggest it naturally, like a coach who cares about the whole person, not just grades.
 
 Format:
-- Plain text, no markdown headers
-- 4-7 short paragraphs
-- End with a small specific encouragement tied to something on their actual schedule"""
+- Organize your response BY CLASS / COURSE. Each section starts with the class name in bold (e.g., **AP Chemistry**), followed by the relevant assignment or calendar item so the student immediately knows what you're talking about.
+- After the per-class sections, include one short closing section for wellness/balance advice and a specific encouragement tied to something on their actual schedule.
+- Use bold (**text**) for class names and key deadlines only — don't over-format.
+- Keep each section to 2-3 sentences.
+- If multiple assignments belong to the same class, group them together in one section."""
 
 
 class InsightsGenerator:
@@ -212,13 +214,18 @@ class InsightsGenerator:
     def summarize_to_bullets(self, content: str) -> list:
         """Ask Claude to distill an insight paragraph into actionable bullet points."""
         import json
+        import re
         response = self.client.messages.create(
-            model="claude-haiku-4-5-20251001",
+            model="claude-opus-4-6",
             max_tokens=1024,
             system=BULLET_SYSTEM_PROMPT,
             messages=[{"role": "user", "content": content}],
         )
         text = next((b.text for b in response.content if b.type == "text"), "[]").strip()
+        # Strip markdown code fences if present (```json ... ```)
+        text = re.sub(r'^```(?:json)?\s*', '', text)
+        text = re.sub(r'\s*```$', '', text)
+        text = text.strip()
         try:
             bullets = json.loads(text)
             if isinstance(bullets, list):

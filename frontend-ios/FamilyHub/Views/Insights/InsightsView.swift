@@ -104,6 +104,38 @@ struct InsightsView: View {
         }
     }
 
+    // MARK: - Markdown rendering
+
+    /// Parses simple **bold** markdown into styled Text views.
+    private func renderedContent(_ content: String) -> some View {
+        let paragraphs = content
+            .components(separatedBy: "\n\n")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+
+        return VStack(alignment: .leading, spacing: 14) {
+            ForEach(0..<paragraphs.count, id: \.self) { index in
+                parseBoldMarkdown(paragraphs[index])
+                    .font(.body)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private func parseBoldMarkdown(_ text: String) -> Text {
+        let parts = text.components(separatedBy: "**")
+        var result = Text(parts[0])
+        for i in 1..<parts.count {
+            if i % 2 == 1 {
+                // Odd index = bold text
+                result = result + Text(parts[i]).bold()
+            } else {
+                result = result + Text(parts[i])
+            }
+        }
+        return result
+    }
+
     // MARK: - Card
 
     @ViewBuilder
@@ -195,9 +227,7 @@ struct InsightsView: View {
                         .transition(.opacity.combined(with: .move(edge: .top)))
                     }
                 } else {
-                    Text(insight.content)
-                        .font(.body)
-                        .fixedSize(horizontal: false, vertical: true)
+                    renderedContent(insight.content)
                         .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
