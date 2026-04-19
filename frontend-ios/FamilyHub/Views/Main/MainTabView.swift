@@ -28,6 +28,6 @@ struct MainTabView: View {
                 .environmentObject(authViewModel)
                 .environmentObject(classroomViewModel)
         }
-        .tint(.indigo)
+        .tint(.purple)
     }
 }

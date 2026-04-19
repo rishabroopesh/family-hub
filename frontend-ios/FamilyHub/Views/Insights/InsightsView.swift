@@ -19,6 +19,32 @@ struct InsightsView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+                // Gradient header
+                HStack {
+                    Image(systemName: "sparkles")
+                        .font(.title2)
+                        .gradientForeground()
+                    Text("Insights")
+                        .font(.title2.bold())
+                        .gradientForeground()
+                    Spacer()
+                    Button {
+                        Task {
+                            switch selectedTab {
+                            case .daily:  await viewModel.loadDaily(forceRefresh: true)
+                            case .weekly: await viewModel.loadWeekly(forceRefresh: true)
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.body.weight(.semibold))
+                            .foregroundStyle(AppTheme.accentGradient)
+                    }
+                    .disabled(viewModel.isLoadingDaily || viewModel.isLoadingWeekly)
+                }
+                .padding(.horizontal)
+                .padding(.top, 8)
+
                 Picker("", selection: $selectedTab) {
                     ForEach(InsightTab.allCases, id: \.self) { tab in
                         Text(tab.rawValue).tag(tab)
@@ -30,13 +56,20 @@ struct InsightsView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
                         if let error = viewModel.error {
-                            Text(error)
-                                .font(.callout)
-                                .foregroundColor(.red)
-                                .padding()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color.red.opacity(0.1))
-                                .cornerRadius(8)
+                            HStack(spacing: 8) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundColor(.orange)
+                                Text(error)
+                                    .font(.callout)
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.orange.opacity(0.1))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                            )
+                            .cornerRadius(10)
                         }
 
                         switch selectedTab {
@@ -57,23 +90,7 @@ struct InsightsView: View {
                     .padding()
                 }
             }
-            .navigationTitle("Insights")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        Task {
-                            switch selectedTab {
-                            case .daily:  await viewModel.loadDaily(forceRefresh: true)
-                            case .weekly: await viewModel.loadWeekly(forceRefresh: true)
-                            }
-                        }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
-                    }
-                    .disabled(viewModel.isLoadingDaily || viewModel.isLoadingWeekly)
-                }
-            }
+            .navigationBarHidden(true)
             .task {
                 if viewModel.dailyInsight == nil {
                     await viewModel.loadDaily()
@@ -91,7 +108,6 @@ struct InsightsView: View {
 
     // MARK: - Markdown rendering
 
-    /// Parses **bold** markdown and renders numbered items with proper spacing.
     private func renderedContent(_ content: String) -> some View {
         let paragraphs = content
             .components(separatedBy: "\n\n")
@@ -112,7 +128,7 @@ struct InsightsView: View {
         var result = Text(parts[0])
         for i in 1..<parts.count {
             if i % 2 == 1 {
-                result = result + Text(parts[i]).bold()
+                result = result + Text(parts[i]).bold().foregroundColor(.purple)
             } else {
                 result = result + Text(parts[i])
             }
@@ -129,10 +145,12 @@ struct InsightsView: View {
         emptyMessage: String
     ) -> some View {
         if isLoading {
-            VStack(spacing: 12) {
+            VStack(spacing: 16) {
                 ProgressView()
-                Text("Asking Claude for insights…")
-                    .font(.caption)
+                    .tint(.purple)
+                    .scaleEffect(1.2)
+                Text("Asking Claude for insights...")
+                    .font(.callout)
                     .foregroundColor(.secondary)
             }
             .frame(maxWidth: .infinity)
@@ -142,36 +160,35 @@ struct InsightsView: View {
                 // Header row
                 HStack {
                     Image(systemName: "sparkles")
-                        .foregroundColor(.indigo)
+                        .foregroundStyle(AppTheme.accentGradient)
                     Text(insight.generatedAtFormatted)
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Spacer()
                     if let count = insight.contextSummary.totalUpcomingAssignments {
-                        Text("\(count) assignments")
-                            .font(.caption)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.indigo.opacity(0.15))
-                            .foregroundColor(.indigo)
-                            .cornerRadius(6)
+                        VibrantBadge(text: "\(count) assignments", icon: "book.fill")
                     }
                 }
 
-                Divider()
+                Rectangle()
+                    .fill(AppTheme.accentGradient)
+                    .frame(height: 1.5)
+                    .opacity(0.5)
 
                 renderedContent(insight.content)
             }
-            .padding()
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
-            .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+            .accentCard()
         } else {
-            Text(emptyMessage)
-                .font(.callout)
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 60)
+            VStack(spacing: 12) {
+                Image(systemName: "sparkles")
+                    .font(.largeTitle)
+                    .gradientForeground()
+                Text(emptyMessage)
+                    .font(.callout)
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 60)
         }
     }
 }

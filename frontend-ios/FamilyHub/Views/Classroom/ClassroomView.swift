@@ -23,6 +23,7 @@ struct ClassroomView: View {
                     ToolbarItem(placement: .primaryAction) {
                         NavigationLink(destination: InsightsView()) {
                             Image(systemName: "sparkles")
+                                .foregroundStyle(AppTheme.accentGradient)
                         }
                     }
                     ToolbarItem(placement: .primaryAction) {
@@ -122,19 +123,17 @@ struct ConnectedClassroomView: View {
         VStack(spacing: 0) {
             // Sync status banner
             if let log = classroomViewModel.syncStatus {
-                HStack {
-                    Text(log.statusEmoji)
+                HStack(spacing: 8) {
+                    Image(systemName: log.status == "success" ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                        .foregroundColor(log.status == "success" ? .green : .orange)
                     Text("Last synced: \(log.startedAt.prefix(10))")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Spacer()
-                    Text("\(log.coursesSynced) courses, \(log.courseworkSynced) assignments")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                    VibrantBadge(text: "\(log.coursesSynced) courses, \(log.courseworkSynced) assignments")
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)
-                .background(Color(.systemGroupedBackground))
             }
 
             if classroomViewModel.isLoading && classroomViewModel.courses.isEmpty {

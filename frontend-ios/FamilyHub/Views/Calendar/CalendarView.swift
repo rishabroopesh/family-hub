@@ -185,13 +185,13 @@ struct DayCell: View {
             Text(date, format: .dateTime.day())
                 .font(.callout)
                 .fontWeight(isToday ? .bold : .regular)
-                .foregroundColor(isSelected ? .white : (isToday ? .indigo : .primary))
+                .foregroundColor(isSelected ? .white : (isToday ? .purple : .primary))
                 .frame(width: 32, height: 32)
-                .background(isSelected ? Color.indigo : Color.clear)
+                .background(isSelected ? Color.purple : Color.clear)
                 .clipShape(Circle())
 
             Circle()
-                .fill(hasEvent ? (isSelected ? Color.white : Color.indigo) : Color.clear)
+                .fill(hasEvent ? (isSelected ? Color.white : Color.purple) : Color.clear)
                 .frame(width: 4, height: 4)
         }
     }
@@ -200,16 +200,16 @@ struct DayCell: View {
 struct EventRowView: View {
     let event: CalendarEvent
 
-    var color: Color {
-        Color(hex: event.displayColor) ?? .indigo
-    }
-
     var body: some View {
         HStack(spacing: 12) {
-            RoundedRectangle(cornerRadius: 3)
-                .fill(color)
-                .frame(width: 4)
-                .frame(height: 44)
+            if event.isClassroomEvent {
+                GradientBar()
+                    .frame(height: 44)
+            } else {
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(Color(hex: event.displayColor) ?? .green)
+                    .frame(width: 4, height: 44)
+            }
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack {
@@ -218,10 +218,9 @@ struct EventRowView: View {
                         .lineLimit(1)
                     Spacer()
                     if event.isClassroomEvent {
-                        Label("Classroom", systemImage: "graduationcap.fill")
+                        Image(systemName: "graduationcap.fill")
                             .font(.caption2)
-                            .foregroundColor(.blue)
-                            .labelStyle(.iconOnly)
+                            .foregroundStyle(AppTheme.accentGradient)
                     }
                 }
                 if let start = event.startDate, !event.allDay {
