@@ -47,7 +47,13 @@ class SyncStatusView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        log = SyncLog.objects.filter(user=request.user).first()
+        # Prefer the most recent successful sync so that failed periodic
+        # syncs (e.g. with stub credentials) don't hide a good status.
+        log = SyncLog.objects.filter(
+            user=request.user, status=SyncLog.Status.SUCCESS
+        ).first()
+        if not log:
+            log = SyncLog.objects.filter(user=request.user).first()
         if not log:
             return Response({'detail': 'No sync history.'}, status=status.HTTP_404_NOT_FOUND)
         return Response(SyncLogSerializer(log).data)
