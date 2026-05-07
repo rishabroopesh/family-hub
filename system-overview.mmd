@@ -1,0 +1,98 @@
+graph TB
+    subgraph DEV["Developer Machine (Windows)"]
+        CLAUDE["Claude Code<br>(Code Generation)"]
+        GIT["Git Client<br>(SSH Auth)"]
+    end
+
+    subgraph GITHUB["GitHub — rishabroopesh/family-hub"]
+        REPO["Repository<br>├── backend/<br>├── frontend-ios/<br>├── docker-compose.yml<br>└── .env.example"]
+    end
+
+    subgraph MAC["Mac (Xcode)"]
+        XCODE["Xcode 15+<br>(Build & Deploy)"]
+        SIM["iOS Simulator"]
+        DEVICE["iPhone<br>(Physical Device)"]
+    end
+
+    subgraph GOOGLE["Google Cloud"]
+        OAUTH["OAuth 2.0<br>(Consent Screen)"]
+        CLASSROOM_API["Google Classroom API<br>(Read-only)"]
+    end
+
+    subgraph UNRAID["Unraid Server — Local Network :8000"]
+        subgraph DOCKER["Docker Compose Stack"]
+            BACKEND["familyhub-backend<br>Django 5.1 + Gunicorn<br>:8000"]
+            WORKER["familyhub-celery-worker<br>Async Task Processor"]
+            BEAT["familyhub-celery-beat<br>Scheduler (every 30 min)"]
+            DB["familyhub-db<br>PostgreSQL 16<br>:5432"]
+            REDIS["familyhub-redis<br>Redis 7<br>:6379"]
+        end
+
+        subgraph VOLUMES["Persistent Volumes (/mnt/user/appdata/familyhub/)"]
+            VOL_PG[("postgres/")]
+            VOL_STATIC[("static/")]
+            VOL_MEDIA[("media/")]
+            VOL_REDIS[("redis/")]
+        end
+    end
+
+    subgraph IOS["iOS App (SwiftUI)"]
+        APICLIENT["APIClient<br>(URLSession + Keychain)"]
+        subgraph VIEWS["Views"]
+            V1["LoginView<br>RegisterView"]
+            V2["PagesListView<br>PageEditorView"]
+            V3["CalendarView<br>AddEventView"]
+            V4["ClassroomView<br>CourseDetailView"]
+            V5["SettingsView"]
+        end
+        subgraph VMS["ViewModels"]
+            VM1["AuthViewModel"]
+            VM2["PagesViewModel"]
+            VM3["CalendarViewModel"]
+            VM4["ClassroomViewModel"]
+        end
+        subgraph SERVICES["Services"]
+            S1["AuthService"]
+            S2["PageService"]
+            S3["CalendarService"]
+            S4["ClassroomService"]
+        end
+    end
+
+    %% Developer workflow
+    CLAUDE -->|generates code| GIT
+    GIT -->|git push SSH| REPO
+    REPO -->|git clone| MAC
+    REPO -->|git clone| UNRAID
+
+    %% Xcode builds app
+    XCODE -->|reads Swift files| REPO
+    XCODE -->|run on| SIM
+    XCODE -->|deploy to| DEVICE
+
+    %% iOS app communicates with backend
+    DEVICE -->|HTTP REST /api/v1/| BACKEND
+    SIM -->|HTTP REST /api/v1/| BACKEND
+
+    %% Django internal connections
+    BACKEND -->|read/write| DB
+    BACKEND -->|enqueue tasks| REDIS
+    WORKER -->|dequeue tasks| REDIS
+    WORKER -->|read/write| DB
+    BEAT -->|schedule tasks| REDIS
+
+    %% Volume mounts
+    DB --- VOL_PG
+    BACKEND --- VOL_STATIC
+    BACKEND --- VOL_MEDIA
+    REDIS --- VOL_REDIS
+
+    %% Google integrations
+    BACKEND -->|OAuth token exchange| OAUTH
+    WORKER -->|fetch courses & assignments| CLASSROOM_API
+    DEVICE -->|ASWebAuthenticationSession| OAUTH
+
+    %% iOS internal structure
+    VIEWS --> VMS
+    VMS --> SERVICES
+    SERVICES --> APICLIENT
