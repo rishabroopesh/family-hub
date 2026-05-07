@@ -3,10 +3,7 @@ import SwiftUI
 struct PagesListView: View {
     @EnvironmentObject var pagesViewModel: PagesViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
-    @State private var showNewPage = false
-    @State private var newPageTitle = ""
     @State private var selectedPageId: String?
-    @State private var pendingPageType: PageType = .page
 
     var body: some View {
         NavigationStack {
@@ -40,14 +37,11 @@ struct PagesListView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Menu {
-                        ForEach(PageType.allCases, id: \.rawValue) { type in
-                            Button {
-                                pendingPageType = type
-                                showNewPage = true
-                            } label: {
-                                Label(type.displayName, systemImage: type.systemImage)
-                            }
+                    Button {
+                        guard let workspaceId = authViewModel.currentWorkspaceId else { return }
+                        Task {
+                            let page = await pagesViewModel.createPage(workspaceId: workspaceId)
+                            if let page { selectedPageId = page.id }
                         }
                     } label: {
                         Image(systemName: "plus")
@@ -65,23 +59,6 @@ struct PagesListView: View {
             .onChange(of: authViewModel.currentWorkspaceId) { _, newId in
                 guard let workspaceId = newId else { return }
                 Task { await pagesViewModel.loadPages(workspaceId: workspaceId) }
-            }
-            .alert("New \(pendingPageType.displayName)", isPresented: $showNewPage) {
-                TextField("Title", text: $newPageTitle)
-                Button("Create") {
-                    guard let workspaceId = authViewModel.currentWorkspaceId else { return }
-                    let type = pendingPageType
-                    Task {
-                        let page = await pagesViewModel.createPage(
-                            workspaceId: workspaceId,
-                            title: newPageTitle,
-                            pageType: type
-                        )
-                        if let page = page { selectedPageId = page.id }
-                        newPageTitle = ""
-                    }
-                }
-                Button("Cancel", role: .cancel) { newPageTitle = "" }
             }
             .navigationDestination(item: $selectedPageId) { pageId in
                 PageEditorView(pageId: pageId)

@@ -35,20 +35,12 @@ final class PagesViewModel: ObservableObject {
         }
     }
 
-    func createPage(workspaceId: Int, title: String, parentId: String? = nil, pageType: PageType = .page) async -> Page? {
-        // For typed pages (task list, todo, code) the first block is a type marker.
-        // Regular pages start with an empty paragraph.
-        let initialBlock: PageBlock
-        switch pageType {
-        case .page:
-            initialBlock = PageBlock(id: nil, type: "paragraph", content: [])
-        default:
-            initialBlock = PageBlock(id: nil, type: pageType.rawValue, content: [])
-        }
+    func createPage(workspaceId: Int, title: String = "", parentId: String? = nil) async -> Page? {
+        let initialBlock = PageBlock(id: nil, type: "paragraph", content: [])
         let request = CreatePageRequest(
             workspace: workspaceId,
             title: title.isEmpty ? "Untitled" : title,
-            icon: pageType.defaultEmoji,
+            icon: "📄",
             content: [initialBlock],
             parentPage: parentId
         )

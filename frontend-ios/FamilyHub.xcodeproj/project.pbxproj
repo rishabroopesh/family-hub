@@ -33,9 +33,9 @@
 		B9C1462DE2AFB8C19BFEBA10 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 719B12AD23ECAA31B70FCFA2 /* MainTabView.swift */; };
 		BE8F4C5B2F0A6EDCFA6DD1B3 /* ClassroomViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3E36454DD897072E15B116 /* ClassroomViewModel.swift */; };
 		DA097A5F26DA119E4D3889D8 /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ADEA1A1A7A921137152CB5D /* InsightsView.swift */; };
-		F1A2B3C4D5E6F7A8B9C0D1E2 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A2B3C4D5E6F7A8B9C0D1E3 /* Theme.swift */; };
 		EA30749F8EC0DE6D78812271 /* CalendarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4334E2FD7CEAFA5C94D310B /* CalendarViewModel.swift */; };
 		F02795148D01A8A4CF499258 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B086CDD9192B5F8354FA7C /* AuthViewModel.swift */; };
+		F1A2B3C4D5E6F7A8B9C0D1E2 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A2B3C4D5E6F7A8B9C0D1E3 /* Theme.swift */; };
 		F63E7C31E74B850954FAFFB8 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15F484BDF844D7C96DD6366A /* AuthService.swift */; };
 /* End PBXBuildFile section */
 
@@ -58,8 +58,7 @@
 		8FE066759DAA6E7A78BF53EE /* Endpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoints.swift; sourceTree = "<group>"; };
 		925C3FF6C400CD36DC61B7B5 /* PageModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageModels.swift; sourceTree = "<group>"; };
 		9ADEA1A1A7A921137152CB5D /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
-		F1A2B3C4D5E6F7A8B9C0D1E3 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
-		A1C851EE630066F83F53A13D /* FamilyHub.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FamilyHub.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1C851EE630066F83F53A13D /* FamilyHub.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FamilyHub.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB41E6E6BE43862CBE56CDE7 /* PagesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagesViewModel.swift; sourceTree = "<group>"; };
 		AD650637EC92DA7703B3A4BA /* CalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarService.swift; sourceTree = "<group>"; };
 		B02FDC78A76217EC7D9C6DF7 /* PageEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageEditorView.swift; sourceTree = "<group>"; };
@@ -69,6 +68,7 @@
 		CF9D324DE31724F3017BE77A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		D4334E2FD7CEAFA5C94D310B /* CalendarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarViewModel.swift; sourceTree = "<group>"; };
 		DABDB64DCB3B902EF9A9517C /* InsightsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsViewModel.swift; sourceTree = "<group>"; };
+		F1A2B3C4D5E6F7A8B9C0D1E3 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		F57AE3FAD923A6FA0F6AC1EF /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		FC0D06DA6308E7A786A134CD /* AuthModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthModels.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -250,9 +250,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-				};
+				LastUpgradeCheck = 2640;
 			};
 			buildConfigurationList = C37778815010A512ADDF5671 /* Build configuration list for PBXProject "FamilyHub" */;
 			developmentRegion = en;
@@ -372,6 +370,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -385,6 +384,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
@@ -449,6 +449,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -469,6 +470,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
